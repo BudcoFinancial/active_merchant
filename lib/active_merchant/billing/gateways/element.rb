@@ -346,7 +346,7 @@ module ActiveMerchant #:nodoc:
       end
 
       def url(action)
-        if action == 'PaymentAccountCreate'
+        if ['PaymentAccountCreate', 'PaymentAccountQuery'].include?(action)
           url = (test? ? SERVICE_TEST_URL : SERVICE_LIVE_URL)
         else
           url = (test? ? test_url : live_url)
@@ -354,8 +354,8 @@ module ActiveMerchant #:nodoc:
       end
 
       def interface(action)
-        return 'transaction' if action != 'PaymentAccountCreate'
-        return 'services' if action == 'PaymentAccountCreate'
+        return 'services' if ['PaymentAccountCreate', 'PaymentAccountQuery'].include?(action)
+        return 'transaction'
       end
 
       def headers(action)
