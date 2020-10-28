@@ -123,6 +123,22 @@ module ActiveMerchant #:nodoc:
         commit('PaymentAccountCreate', request, nil)
       end
 
+      def payment_account_query(token=nil, options={})
+        request = build_soap_request do |xml|
+          xml.PaymentAccountQuery(xmlns: 'https://services.elementexpress.com') do
+            add_credentials(xml)
+            add_terminal(xml, options)
+            if token
+              xml.paymentAccountParameters do
+                xml.PaymentAccountID token
+                xml.PaymentAccountType 'CreditCard'
+              end
+            end
+          end
+        end
+        commit('PaymentAccountQuery', request, nil)
+      end
+
       def verify(credit_card, options={})
         MultiResponse.run(:use_first_response) do |r|
           r.process { authorize(100, credit_card, options) }
