@@ -123,6 +123,22 @@ module ActiveMerchant #:nodoc:
         commit('PaymentAccountCreate', request, nil)
       end
 
+      def payment_account_query(token=nil, options={})
+        request = build_soap_request do |xml|
+          xml.PaymentAccountQuery(xmlns: 'https://services.elementexpress.com') do
+            add_credentials(xml)
+            add_terminal(xml, options)
+            if token
+              xml.paymentAccountParameters do
+                xml.PaymentAccountID token
+                xml.PaymentAccountType 'CreditCard'
+              end
+            end
+          end
+        end
+        commit('PaymentAccountQuery', request, nil)
+      end
+
       def verify(credit_card, options={})
         MultiResponse.run(:use_first_response) do |r|
           r.process { authorize(100, credit_card, options) }
@@ -346,7 +362,7 @@ module ActiveMerchant #:nodoc:
       end
 
       def url(action)
-        if action == 'PaymentAccountCreate'
+        if ['PaymentAccountCreate', 'PaymentAccountQuery'].include?(action)
           url = (test? ? SERVICE_TEST_URL : SERVICE_LIVE_URL)
         else
           url = (test? ? test_url : live_url)
@@ -354,8 +370,8 @@ module ActiveMerchant #:nodoc:
       end
 
       def interface(action)
-        return 'transaction' if action != 'PaymentAccountCreate'
-        return 'services' if action == 'PaymentAccountCreate'
+        return 'services' if ['PaymentAccountCreate', 'PaymentAccountQuery'].include?(action)
+        return 'transaction'
       end
 
       def headers(action)
